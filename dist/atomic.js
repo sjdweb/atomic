@@ -1,4 +1,4 @@
-/*! atomic v1.0.0 | (c) 2014 @toddmotto | github.com/toddmotto/atomic */
+/*! atomic v1.0.0 | (c) 2015 @toddmotto | github.com/toddmotto/atomic */
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     define(factory);
@@ -23,7 +23,7 @@
     return [result, req];
   };
 
-  var xhr = function (type, url, data) {
+  var xhr = function (type, url, data, headers) {
     var methods = {
       success: function () {},
       error: function () {}
@@ -32,9 +32,15 @@
     var request = new XHR('MSXML2.XMLHTTP.3.0');
     request.open(type, url, true);
     request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    if (headers && (typeof headers === 'object')) {
+      for (var headerKey in headers) {
+        request.setRequestHeader(headerKey, headers[headerKey]);
+      }
+    }
     request.onreadystatechange = function () {
       if (request.readyState === 4) {
-        if (request.status === 200) {
+        var okStatuses = [200, 201, 202, 203, 204];
+        if (okStatuses.indexOf(request.status) > -1) {
           methods.success.apply(methods, parse(request));
         } else {
           methods.error.apply(methods, parse(request));
@@ -54,20 +60,20 @@
     };
   };
 
-  exports['get'] = function (src) {
-    return xhr('GET', src);
+  exports['get'] = function (src, headers) {
+    return xhr('GET', src, null, headers);
   };
 
-  exports['put'] = function (url, data) {
-    return xhr('PUT', url, data);
+  exports['put'] = function (url, data, headers) {
+    return xhr('PUT', url, data, headers);
   };
 
-  exports['post'] = function (url, data) {
-    return xhr('POST', url, data);
+  exports['post'] = function (url, data, headers) {
+    return xhr('POST', url, data, headers);
   };
 
-  exports['delete'] = function (url) {
-    return xhr('DELETE', url);
+  exports['delete'] = function (url, headers) {
+    return xhr('DELETE', url, null, headers);
   };
 
   return exports;
